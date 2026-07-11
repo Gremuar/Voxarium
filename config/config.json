@@ -1,0 +1,27 @@
+{
+    "application": {
+        "language": "ru",
+        "theme": "light"
+    },
+
+    "tts": {
+        "default_engine": "",
+        "default_voice": "",
+        "speed": 1.0,
+        "pitch": 1.0
+    },
+
+    "paths": {
+        "output": "data/output",
+        "voices": "data/voices",
+        "cache": "data/cache",
+        "temp": "data/temp",
+        "engines": "data/engines"
+    },
+
+    "system": {
+        "gpu": true,
+        "ffmpeg": "",
+        "workers": 2
+    }
+}
