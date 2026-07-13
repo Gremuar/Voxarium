@@ -7,7 +7,11 @@ Document ID: SAS-002
 
 Title: Domain Ontology
 
+<<<<<<< HEAD
 Version: 1.0.0
+=======
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -20,15 +24,21 @@ Depends On
 
 Referenced By
 
+<<<<<<< HEAD
 - All Domain documents
 - All Module documents
 - All Contract documents
 - All GUI documents
+=======
+- All Domain Documents
+- All Application Documents
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Настоящий документ определяет предметную модель (Domain Model) платформы Voxarium.
 
 Документ описывает архитектурные сущности и отношения между ними.
@@ -194,6 +204,130 @@ Aggregate Root являются единственными точками вхо
 ---
 
 # 6. Entity Relationships
+=======
+Настоящий документ определяет формальную онтологию предметной области Voxarium.
+
+Он описывает:
+
+- типы объектов;
+- отношения между объектами;
+- владельцев объектов;
+- допустимые ссылки;
+- агрегаты;
+- жизненные циклы;
+- правила целостности.
+
+Любая реализация системы SHALL соответствовать настоящей модели.
+
+---
+
+# 2. Domain Classification
+
+Все объекты предметной области относятся ровно к одной из следующих категорий.
+
+- Aggregate Root
+- Entity
+- Value Object
+- Enumeration
+- Domain Service
+- Domain Event
+
+Объект SHALL принадлежать только одной категории.
+
+---
+
+# 3. Aggregate Roots
+
+Aggregate Root являются единственными точками изменения соответствующих агрегатов.
+
+Система определяет следующие Aggregate Root.
+
+| Aggregate | Owner |
+|------------|-------|
+| Project | User |
+| Workflow | Project |
+| Production | Project |
+| Job | Workflow |
+
+Изменение дочерних сущностей SHALL выполняться только через Aggregate Root.
+
+---
+
+# 4. Entities
+
+Entity обладают собственной идентичностью.
+
+К ним относятся:
+
+- Source
+- Document
+- Timeline
+- Fragment
+- Role
+- VoiceProfile
+- SpeechSegment
+- Asset
+- Emotion
+
+Entity имеют стабильный идентификатор.
+
+Изменение атрибутов Entity НЕ изменяет их идентичность.
+
+---
+
+# 5. Value Objects
+
+Value Object не имеют собственной идентичности.
+
+Примеры:
+
+- TimeRange
+- AudioFormat
+- VoiceParameters
+- GenerationParameters
+- ExportSettings
+- FileChecksum
+- SampleRate
+- LanguageCode
+
+Value Object SHALL быть неизменяемыми.
+
+---
+
+# 6. Enumerations
+
+Перечисления определяют ограниченный набор допустимых значений.
+
+Примеры:
+
+- GenerationStatus
+- JobStatus
+- FragmentType
+- AssetType
+- ExportFormat
+- EmotionType
+- VoiceGender
+
+Добавление новых элементов перечислений SHALL сохранять обратную совместимость.
+
+---
+
+# 7. Ownership Model
+
+Каждый объект имеет единственного владельца.
+
+Владение означает:
+
+- ответственность за жизненный цикл;
+- ответственность за сохранение;
+- ответственность за удаление.
+
+Ссылка не является владением.
+
+---
+
+# 8. Ownership Tree
+>>>>>>> c975edf (t)
 
 ```
 Project
@@ -201,6 +335,7 @@ Project
 ├── Sources
 │
 ├── Documents
+<<<<<<< HEAD
 │
 ├── Productions
 │      │
@@ -357,11 +492,240 @@ Settings
 # 14. Domain Events
 
 Любое изменение состояния сущности должно сопровождаться публикацией Domain Event.
+=======
+│   │
+│   ├── Fragments
+│   │
+│   └── Timeline
+│
+├── Roles
+│
+├── VoiceProfiles
+│
+├── Productions
+│
+├── Assets
+│
+└── Workflows
+    │
+    └── Jobs
+```
+
+Данная структура SHALL быть единственным деревом владения объектов.
+
+---
+
+# 9. Reference Rules
+
+Допускаются только ссылки.
+
+```
+Fragment
+────────────► Role
+
+Fragment
+────────────► Emotion
+
+SpeechSegment
+────────────► Fragment
+
+SpeechSegment
+────────────► VoiceProfile
+
+Timeline
+────────────► SpeechSegment
+
+Production
+────────────► Timeline
+
+Workflow
+────────────► Production
+```
+
+Ссылки НЕ изменяют жизненный цикл объекта.
+
+---
+
+# 10. Forbidden References
+
+Запрещены следующие зависимости.
+
+```
+VoiceProfile
+────────► Project
+
+Role
+────────► Workflow
+
+Fragment
+────────► Project
+
+Job
+────────► GUI
+
+Asset
+────────► Plugin
+
+Timeline
+────────► File System
+```
+
+Подобные зависимости нарушают модель агрегатов.
+
+---
+
+# 11. Object Identity
+
+Каждый Entity обязан иметь постоянный идентификатор.
+
+Идентификатор:
+
+- уникален внутри Project;
+- никогда не изменяется;
+- используется всеми ссылками.
+
+Запрещается использовать позицию объекта как идентификатор.
+
+---
+
+# 12. Lifecycle Ownership
+
+Создание и удаление объектов определяется владельцем.
+
+| Object | Created By | Deleted By |
+|----------|------------|------------|
+| Source | Project | Project |
+| Document | Project | Project |
+| Fragment | Document | Document |
+| Timeline | Document | Document |
+| SpeechSegment | Timeline | Timeline |
+| Role | Project | Project |
+| VoiceProfile | Project | Project |
+| Asset | Project | Project |
+| Workflow | Project | Project |
+| Job | Workflow | Workflow |
+
+Никакой другой компонент SHALL NOT выполнять данные операции напрямую.
+
+---
+
+# 13. Aggregate Boundaries
+
+Каждый Aggregate обеспечивает:
+
+- согласованность данных;
+- выполнение инвариантов;
+- публикацию Domain Events.
+
+Изменения за пределами Aggregate запрещены.
+
+---
+
+# 14. Invariants
+
+Следующие правила являются обязательными.
+
+Project SHALL иметь уникальный Identifier.
+
+Document SHALL принадлежать ровно одному Project.
+
+Fragment SHALL принадлежать ровно одному Document.
+
+Timeline SHALL принадлежать ровно одному Document.
+
+SpeechSegment SHALL ссылаться на существующий Fragment.
+
+Role SHALL принадлежать одному Project.
+
+VoiceProfile SHALL принадлежать одному Project.
+
+Workflow SHALL принадлежать одному Project.
+
+Job SHALL принадлежать одному Workflow.
+
+---
+
+# 15. Multiplicity
+
+Кардинальность отношений.
+
+```
+Project
+1
+↓
+
+*
+Document
+
+Document
+1
+↓
+
+*
+Fragment
+
+Document
+1
+↓
+
+1
+Timeline
+
+Timeline
+1
+↓
+
+*
+SpeechSegment
+
+Role
+1
+↓
+
+*
+Fragment
+
+VoiceProfile
+1
+↓
+
+*
+SpeechSegment
+
+Workflow
+1
+↓
+
+*
+Job
+```
+
+Любое нарушение кардинальности является ошибкой модели.
+
+---
+
+# 16. Referential Integrity
+
+Удаление объекта SHALL проверять существующие ссылки.
+
+Если существуют обязательные ссылки, удаление запрещается.
+
+Если существуют необязательные ссылки, они должны быть корректно обновлены.
+
+Запрещается существование "висячих" ссылок.
+
+---
+
+# 17. Domain Events
+
+Каждый Aggregate публикует события изменения состояния.
+>>>>>>> c975edf (t)
 
 Примеры:
 
 ProjectCreated
 
+<<<<<<< HEAD
 RoleCreated
 
 VoiceAssigned
@@ -485,6 +849,102 @@ Document всегда связан хотя бы с одним Source.
 Все документы спецификации обязаны использовать исключительно сущности, определённые настоящим документом.
 
 Создание новых доменных сущностей вне настоящего документа запрещено.
+=======
+ProjectOpened
+
+DocumentImported
+
+FragmentCreated
+
+FragmentDeleted
+
+RoleAssigned
+
+VoiceAssigned
+
+WorkflowStarted
+
+JobCompleted
+
+Детальный каталог событий определяется разделом `500_Events`.
+
+---
+
+# 18. Commands
+
+Изменение агрегатов SHALL выполняться только через команды.
+
+Примеры:
+
+CreateProject
+
+ImportDocument
+
+SplitFragment
+
+AssignRole
+
+AssignVoice
+
+CreateWorkflow
+
+StartJob
+
+Полный каталог команд определяется разделом `400_Commands`.
+
+---
+
+# 19. Persistence Independence
+
+Онтология не зависит от способа хранения.
+
+Одинаковая модель SHALL использоваться:
+
+- в памяти;
+- на диске;
+- при сериализации;
+- при импорте;
+- при экспорте.
+
+---
+
+# 20. Extension Rules
+
+Plugin MAY создавать новые объекты только через опубликованные контракты.
+
+Plugin SHALL NOT изменять существующую онтологию.
+
+Plugin SHALL NOT изменять отношения владения.
+
+Plugin SHALL NOT изменять кардинальности.
+
+Расширения допускаются только через предусмотренные точки расширения.
+
+---
+
+# 21. AI Implementation Requirements
+
+ИИ-агент, реализующий систему, SHALL использовать настоящую онтологию как единственный источник истины о предметной модели.
+
+Любая попытка добавить новые отношения владения, изменить агрегаты или нарушить кардинальности считается отклонением от архитектуры.
+
+---
+
+# 22. Compliance Checklist
+
+Документ предметной области соответствует настоящей онтологии только если:
+
+- объект имеет определённую категорию;
+- определён владелец объекта;
+- определён жизненный цикл;
+- определены допустимые ссылки;
+- определены запрещённые ссылки;
+- определены инварианты;
+- определены кардинальности;
+- определены Domain Events;
+- определены Commands;
+- отсутствуют неоднозначности владения.
+>>>>>>> c975edf (t)
 
 ---
 

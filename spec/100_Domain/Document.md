@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Document.md
 
+<<<<<<< HEAD
 Document ID: DOM-103
 
 Title: Document
 
 Version: 1.0.0
+=======
+Document ID: DOM-003
+
+Title: Document
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,6 +23,7 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
@@ -30,11 +39,29 @@ Referenced By
 - IImporter.md
 - ITimelineService.md
 - Project_Format.md
+=======
+- SAS-000 Project Philosophy
+- SAS-001 Glossary
+- SAS-002 Domain Ontology
+- SAS-003 Architecture Principles
+- Project
+- Source
+
+Referenced By
+
+- Fragment
+- Timeline
+- Search_Index_Service
+- Generation_Service
+- Workflow_Engine
+- Project_Service
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Document является каноническим внутренним представлением текстового содержимого проекта.
 
 Document существует исключительно внутри платформы Voxarium и не зависит от формата импортированного материала.
@@ -394,11 +421,434 @@ Plugin может добавлять:
 - дополнительные метаданные.
 
 Core не должен интерпретировать специализированные данные Plugin.
+=======
+Document представляет логически завершённый текстовый документ внутри проекта.
+
+Document является основной структурной единицей предметной области, объединяющей текст, его логическую структуру, временную шкалу и результаты подготовки к генерации речи.
+
+Document не является файлом.
+
+Document является внутренним представлением текста после его импорта.
+
+---
+
+# 2. Responsibilities
+
+Document SHALL отвечать за:
+
+- хранение текстовой структуры;
+- владение Fragment;
+- владение Timeline;
+- хранение метаданных документа;
+- хранение информации о языке;
+- хранение информации о состоянии подготовки;
+- обеспечение ссылочной целостности внутри документа.
+
+---
+
+# 3. Non-Responsibilities
+
+Document SHALL NOT:
+
+- хранить исходный файл;
+- выполнять импорт;
+- выполнять экспорт;
+- выполнять генерацию речи;
+- хранить Audio;
+- выполнять синтез речи;
+- выполнять поиск;
+- выполнять индексацию.
+
+---
+
+# 4. Aggregate
+
+Document является Aggregate Root второго уровня.
+
+Структура агрегата:
+
+```
+Project
+    │
+    └── Document
+            │
+            ├── Fragments
+            │
+            └── Timeline
+                    │
+                    └── SpeechSegments
+```
+
+Все изменения Fragment и Timeline SHALL выполняться через Document.
+
+---
+
+# 5. Ownership
+
+Document принадлежит одному Project.
+
+Document владеет:
+
+- Fragment;
+- Timeline.
+
+Document НЕ владеет:
+
+- Source;
+- Role;
+- VoiceProfile;
+- Workflow;
+- Production.
+
+---
+
+# 6. Identity
+
+Document обязан иметь неизменяемый Identifier.
+
+Identifier SHALL:
+
+- быть уникальным внутри Project;
+- использоваться всеми внутренними ссылками;
+- сохраняться после сериализации;
+- никогда не изменяться.
+
+---
+
+# 7. Metadata
+
+Document содержит следующие свойства.
+
+| Property | Required | Mutable |
+|-----------|----------|---------|
+| Identifier | Yes | No |
+| Name | Yes | Yes |
+| SourceId | Yes | No |
+| Language | Yes | Yes |
+| Description | No | Yes |
+| CreatedUtc | Yes | No |
+| ModifiedUtc | Yes | Yes |
+| Revision | Yes | Yes |
+| Status | Yes | Yes |
+
+---
+
+# 8. Status
+
+Допустимые состояния.
+
+- Imported
+- Parsed
+- Edited
+- Validated
+- ReadyForGeneration
+- Archived
+
+Document SHALL находиться ровно в одном состоянии.
+
+---
+
+# 9. Lifecycle
+
+```
+Imported
+
+↓
+
+Parsed
+
+↓
+
+Edited
+
+↓
+
+Validated
+
+↓
+
+ReadyForGeneration
+
+↓
+
+Archived
+```
+
+Переход в Archived является необратимым.
+
+---
+
+# 10. State Transition Rules
+
+Допустимы только следующие переходы.
+
+```
+Imported
+↓
+
+Parsed
+
+Parsed
+↓
+
+Edited
+
+Edited
+↓
+
+Validated
+
+Validated
+↓
+
+ReadyForGeneration
+
+ReadyForGeneration
+↓
+
+Edited
+
+Validated
+↓
+
+Archived
+
+ReadyForGeneration
+↓
+
+Archived
+```
+
+Иные переходы SHALL завершаться ошибкой.
+
+---
+
+# 11. Source Relationship
+
+Каждый Document SHALL ссылаться ровно на один Source.
+
+Source SHALL существовать.
+
+Удаление Source при существующем Document запрещено.
+
+Document не копирует информацию Source.
+
+---
+
+# 12. Fragment Collection
+
+Document содержит упорядоченную коллекцию Fragment.
+
+Коллекция SHALL:
+
+- иметь детерминированный порядок;
+- не содержать дубликатов;
+- обеспечивать поиск по Identifier;
+- обеспечивать стабильность ссылок.
+
+Изменение порядка SHALL выполняться через команды Document.
+
+---
+
+# 13. Timeline
+
+Каждый Document содержит ровно один Timeline.
+
+Timeline SHALL существовать всегда.
+
+Пустой Timeline допустим.
+
+Создание нескольких Timeline запрещено.
+
+---
+
+# 14. Language
+
+Document имеет основной язык.
+
+Все Fragment по умолчанию наследуют язык Document.
+
+Fragment MAY переопределять язык.
+
+---
+
+# 15. Revision
+
+Document содержит номер ревизии.
+
+Ревизия SHALL увеличиваться при любом изменении структуры документа.
+
+Изменение только служебных данных MAY не увеличивать ревизию.
+
+---
+
+# 16. Invariants
+
+Document SHALL удовлетворять следующим требованиям.
+
+- Identifier существует.
+- Source существует.
+- Timeline существует.
+- Name не пустой.
+- Все Fragment имеют уникальные Identifier.
+- Все ссылки корректны.
+- Нет дублирующихся Fragment.
+- Нет циклических ссылок.
+- Revision ≥ 1.
+
+---
+
+# 17. Creation Rules
+
+Document создаётся исключительно через Import Service или Document Service.
+
+При создании SHALL:
+
+- создать Identifier;
+- создать Timeline;
+- создать пустую коллекцию Fragment;
+- установить состояние Imported;
+- опубликовать событие DocumentCreated.
+
+---
+
+# 18. Modification Rules
+
+Любое изменение SHALL:
+
+- проверять инварианты;
+- увеличивать Revision (при структурных изменениях);
+- обновлять ModifiedUtc;
+- публиковать соответствующее Domain Event.
+
+---
+
+# 19. Deletion Rules
+
+Удаление допускается только через Project.
+
+Удаление SHALL удалить:
+
+- Timeline;
+- Fragment;
+- Search Index;
+- связанные SpeechSegment.
+
+Document SHALL NOT удаляться напрямую другими объектами.
+
+---
+
+# 20. Relationships
+
+```
+Project
+    │
+    ├──── owns ───► Document
+    │
+    └──── owns ───► Source
+
+Document
+    │
+    ├──── references ─► Source
+    │
+    ├──── owns ───────► Fragment
+    │
+    └──── owns ───────► Timeline
+```
+
+---
+
+# 21. Concurrency
+
+Document поддерживает:
+
+- конкурентное чтение;
+- единственную операцию записи.
+
+Одновременное изменение несколькими потоками запрещено.
+
+Изменения SHALL сериализоваться Application Layer.
+
+---
+
+# 22. Persistence
+
+Document сериализуется исключительно как часть Project.
+
+Document SHALL NOT знать:
+
+- JSON;
+- XML;
+- SQLite;
+- ZIP;
+- файловую систему.
+
+---
+
+# 23. Domain Events
+
+Document публикует:
+
+- DocumentCreated
+- DocumentOpened
+- DocumentRenamed
+- DocumentModified
+- DocumentValidated
+- DocumentArchived
+- DocumentDeleted
+
+---
+
+# 24. Commands
+
+Document поддерживает:
+
+- CreateDocument
+- RenameDocument
+- ValidateDocument
+- ArchiveDocument
+- DeleteDocument
+- RebuildTimeline
+- ReorderFragments
+
+---
+
+# 25. Extension Rules
+
+Plugin MAY:
+
+- добавлять пользовательские свойства;
+- хранить собственые метаданные;
+- регистрировать пользовательские анализаторы.
+
+Plugin SHALL NOT:
+
+- изменять структуру агрегата;
+- изменять обязательные свойства;
+- создавать дополнительные Timeline;
+- обходить Aggregate Root.
+
+---
+
+# 26. AI Implementation Requirements
+
+ИИ SHALL реализовывать Document исключительно как Aggregate Root.
+
+Недопустимо:
+
+- изменять Fragment напрямую;
+- изменять Timeline в обход Document;
+- хранить скрытое состояние;
+- нарушать инварианты.
+
+Все операции изменения SHALL проходить через команды Application Layer.
+>>>>>>> c975edf (t)
 
 ---
 
 # 27. Test Requirements
 
+<<<<<<< HEAD
 Должны существовать автоматические тесты для проверки:
 
 - создания Document;
@@ -419,6 +869,38 @@ Core не должен интерпретировать специализиро
 Любая реализация сущности Document обязана соответствовать требованиям настоящего документа.
 
 Изменение модели Document допускается только посредством изменения настоящей спецификации и оформления соответствующего Architecture Decision Record.
+=======
+Обязательные тесты.
+
+- создание Document;
+- изменение имени;
+- создание Timeline;
+- создание Fragment;
+- удаление Fragment;
+- проверка ревизий;
+- сериализация;
+- десериализация;
+- проверка всех инвариантов;
+- проверка публикации событий;
+- проверка допустимых переходов состояний.
+
+---
+
+# 28. Compliance Checklist
+
+Реализация соответствует настоящей спецификации только если:
+
+- Document является Aggregate Root;
+- существует ровно один Timeline;
+- существует ровно один Source;
+- соблюдены все инварианты;
+- реализованы все события;
+- реализованы все команды;
+- отсутствует доступ к Infrastructure;
+- отсутствует скрытое состояние;
+- обеспечена потокобезопасность;
+- сериализация полностью воспроизводима.
+>>>>>>> c975edf (t)
 
 ---
 

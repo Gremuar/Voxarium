@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Workflow.md
 
+<<<<<<< HEAD
 Document ID: DOM-113
 
 Title: Workflow
 
 Version: 1.0.0
+=======
+Document ID: DOM-012
+
+Title: Workflow
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,6 +23,7 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
@@ -31,11 +40,28 @@ Referenced By
 - Scheduler.md
 - Automation_Module.md
 - Project_Format.md
+=======
+- SAS-000 Project Philosophy
+- SAS-001 Glossary
+- SAS-002 Domain Ontology
+- Project
+- Document
+- Production
+
+Referenced By
+
+- Workflow_Engine
+- Job_Orchestrator
+- Scheduler
+- Queue
+- Worker
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Workflow представляет собой описание последовательности автоматических операций, выполняемых над Project или его частью.
 
 Workflow является независимой предметной сущностью.
@@ -116,11 +142,69 @@ Workflow является Aggregate Root.
 Workflow принадлежит одному Project.
 
 Project может содержать любое количество Workflow.
+=======
+Workflow представляет собой декларативное описание процесса обработки данных.
+
+Workflow определяет:
+
+- какие действия необходимо выполнить;
+- в каком порядке они должны быть выполнены;
+- при каких условиях допускается переход между этапами;
+- какие объекты проекта участвуют в процессе.
+
+Workflow не выполняет операции самостоятельно.
+
+Workflow является исключительно моделью предметной области.
+
+---
+
+# 2. Responsibilities
+
+Workflow SHALL отвечать за:
+
+- описание последовательности этапов;
+- описание зависимостей между этапами;
+- хранение параметров запуска;
+- хранение пользовательских настроек;
+- хранение текущего состояния выполнения;
+- обеспечение воспроизводимости процесса.
+
+---
+
+# 3. Non-Responsibilities
+
+Workflow SHALL NOT:
+
+- выполнять генерацию;
+- выполнять экспорт;
+- выполнять импорт;
+- выполнять обработку аудио;
+- запускать Worker;
+- управлять потоками;
+- содержать очередь задач.
+
+---
+
+# 4. Ownership
+
+Workflow принадлежит Project.
+
+```
+Project
+    │
+    └── Workflows
+            │
+            └── Workflow
+```
+
+Workflow SHALL NOT существовать вне Project.
+>>>>>>> c975edf (t)
 
 ---
 
 # 5. Identity
 
+<<<<<<< HEAD
 Каждый Workflow имеет постоянный UUID v7.
 
 UUID никогда не изменяется.
@@ -438,6 +522,325 @@ Core не должен содержать информации о внутрен
 Любая реализация Workflow обязана соответствовать требованиям настоящего документа.
 
 Изменение модели Workflow допускается исключительно посредством изменения настоящей спецификации и оформления соответствующего Architecture Decision Record.
+=======
+Каждый Workflow имеет неизменяемый Identifier.
+
+Identifier SHALL:
+
+- быть уникальным внутри Project;
+- сохраняться при сериализации;
+- никогда не изменяться.
+
+---
+
+# 6. Metadata
+
+| Property | Required | Mutable |
+|-----------|----------|---------|
+| Identifier | Yes | No |
+| Name | Yes | Yes |
+| Description | No | Yes |
+| Status | Yes | Yes |
+| Revision | Yes | Yes |
+| CreatedUtc | Yes | No |
+| ModifiedUtc | Yes | Yes |
+
+---
+
+# 7. Workflow Scope
+
+Workflow MAY работать с:
+
+- одним Document;
+- несколькими Document;
+- одним Production;
+- всем Project.
+
+Workflow SHALL явно определять область применения.
+
+---
+
+# 8. Workflow Stages
+
+Workflow состоит из последовательности Stage.
+
+Каждый Stage представляет логический этап обработки.
+
+Примеры:
+
+- Import
+- Parse
+- Analyze
+- Assign Voices
+- Generate Speech
+- Validate
+- Export
+- Publish
+
+Domain не ограничивает набор Stage.
+
+---
+
+# 9. Dependencies
+
+Workflow SHALL представлять зависимости в виде ориентированного ациклического графа (Directed Acyclic Graph, DAG).
+
+Каждый Stage может иметь:
+
+- ни одной зависимости;
+- одну зависимость;
+- несколько зависимостей.
+
+Циклические зависимости запрещены.
+
+---
+
+# 10. Status
+
+Допустимые состояния Workflow.
+
+- Draft
+- Ready
+- Running
+- Paused
+- Completed
+- Failed
+- Cancelled
+- Archived
+
+Workflow SHALL находиться только в одном состоянии.
+
+---
+
+# 11. Lifecycle
+
+```
+Draft
+
+↓
+
+Ready
+
+↓
+
+Running
+
+↓
+
+Completed
+```
+
+Допускаются переходы.
+
+```
+Running → Paused
+
+Paused → Running
+
+Running → Failed
+
+Running → Cancelled
+
+Completed → Archived
+```
+
+Другие переходы запрещены.
+
+---
+
+# 12. Determinism
+
+Workflow SHALL быть полностью детерминированным.
+
+При одинаковых:
+
+- входных данных;
+- конфигурации;
+- версии приложения;
+
+Workflow обязан строить одинаковый план выполнения.
+
+---
+
+# 13. Versioning
+
+Каждый Workflow имеет Revision.
+
+Любое изменение структуры SHALL увеличивать Revision.
+
+Во время выполнения изменение структуры запрещено.
+
+---
+
+# 14. Invariants
+
+Workflow SHALL удовлетворять следующим требованиям.
+
+- Identifier существует.
+- Name существует.
+- Stage уникальны.
+- отсутствуют циклы.
+- существует единственная начальная вершина.
+- все ссылки корректны.
+- Revision ≥ 1.
+
+---
+
+# 15. Creation Rules
+
+Workflow создаётся через Workflow Service.
+
+Во время создания SHALL:
+
+- создать Identifier;
+- установить Revision = 1;
+- установить состояние Draft;
+- опубликовать WorkflowCreated.
+
+---
+
+# 16. Modification Rules
+
+Любое изменение SHALL:
+
+- проверять DAG;
+- увеличивать Revision;
+- публиковать WorkflowModified.
+
+---
+
+# 17. Execution Model
+
+Workflow описывает только план выполнения.
+
+Фактическое выполнение принадлежит:
+
+- Workflow Engine;
+- Job Orchestrator;
+- Scheduler;
+- Queue;
+- Worker.
+
+---
+
+# 18. Persistence
+
+Workflow сериализуется как часть Project.
+
+Workflow SHALL NOT знать:
+
+- Runtime;
+- Worker;
+- Queue;
+- Thread Pool;
+- процессы ОС.
+
+---
+
+# 19. Concurrency
+
+Workflow допускает:
+
+- конкурентное чтение.
+
+Не допускает:
+
+- конкурентную модификацию.
+
+---
+
+# 20. Domain Events
+
+Workflow публикует:
+
+- WorkflowCreated
+- WorkflowModified
+- WorkflowStarted
+- WorkflowPaused
+- WorkflowCompleted
+- WorkflowFailed
+- WorkflowCancelled
+- WorkflowArchived
+
+---
+
+# 21. Commands
+
+Поддерживаются команды.
+
+- CreateWorkflow
+- UpdateWorkflow
+- ValidateWorkflow
+- StartWorkflow
+- PauseWorkflow
+- ResumeWorkflow
+- CancelWorkflow
+- ArchiveWorkflow
+
+---
+
+# 22. Extension Rules
+
+Plugin MAY:
+
+- добавлять новые типы Stage;
+- добавлять пользовательские параметры;
+- добавлять собственные проверки.
+
+Plugin SHALL NOT:
+
+- нарушать структуру DAG;
+- изменять обязательные свойства;
+- нарушать инварианты.
+
+---
+
+# 23. AI Implementation Requirements
+
+Workflow SHALL описывать исключительно бизнес-процесс.
+
+Реализация SHALL NOT содержать:
+
+- Thread;
+- Task;
+- Future;
+- asyncio;
+- процессы;
+- сетевые соединения.
+
+Все механизмы исполнения принадлежат Application Layer.
+
+---
+
+# 24. Test Requirements
+
+Минимальный набор тестов.
+
+- создание Workflow;
+- проверка DAG;
+- обнаружение циклов;
+- изменение Revision;
+- сериализация;
+- десериализация;
+- проверка состояний;
+- проверка публикации событий;
+- проверка инвариантов.
+
+---
+
+# 25. Compliance Checklist
+
+Реализация соответствует настоящей спецификации только если:
+
+- Workflow принадлежит Project;
+- является DAG;
+- полностью детерминирован;
+- не зависит от Runtime;
+- реализованы все события;
+- реализованы все команды;
+- соблюдены все инварианты;
+- сериализация полностью воспроизводима.
+>>>>>>> c975edf (t)
 
 ---
 

@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Project.md
 
+<<<<<<< HEAD
 Document ID: DOM-100
 
 Title: Project
 
 Version: 1.0.0
+=======
+Document ID: DOM-001
+
+Title: Project
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,12 +23,17 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
+=======
+- SAS-000 Project Philosophy
+>>>>>>> c975edf (t)
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
 
 Referenced By
 
+<<<<<<< HEAD
 - Production.md
 - Source.md
 - Document.md
@@ -31,11 +44,27 @@ Referenced By
 - Asset.md
 - Storage specifications
 - GUI specifications
+=======
+- Source
+- Document
+- Timeline
+- Fragment
+- Role
+- VoiceProfile
+- Asset
+- Workflow
+- Production
+- GenerationPreset
+- Project_Service
+- Import_Service
+- Export_Service
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Project является главной пользовательской сущностью платформы Voxarium.
 
 Все действия пользователя выполняются внутри Project.
@@ -80,6 +109,155 @@ Project является Aggregate Root верхнего уровня.
 # 4. Lifecycle
 
 Жизненный цикл Project.
+=======
+Project представляет собой корневой Aggregate Root всей предметной модели Voxarium.
+
+Все пользовательские данные, независимо от их назначения, SHALL принадлежать ровно одному Project.
+
+Никакие Domain Entity SHALL NOT существовать вне Project.
+
+---
+
+# 2. Responsibilities
+
+Project SHALL отвечать за:
+
+- владение всеми Domain Entity;
+- управление жизненным циклом проекта;
+- хранение глобальных метаданных;
+- обеспечение ссылочной целостности;
+- публикацию событий верхнего уровня;
+- управление версиями проекта;
+- регистрацию используемых компонентов;
+- контроль совместимости формата проекта.
+
+---
+
+# 3. Non-Responsibilities
+
+Project SHALL NOT:
+
+- выполнять импорт;
+- выполнять экспорт;
+- выполнять генерацию речи;
+- выполнять обработку аудио;
+- обращаться к AI-моделям;
+- обращаться к файловой системе;
+- содержать алгоритмы Workflow;
+- выполнять поиск.
+
+Эти обязанности принадлежат Application Layer.
+
+---
+
+# 4. Aggregate Root
+
+Project является Aggregate Root.
+
+Следующие объекты могут изменяться только через Project:
+
+- Source
+- Document
+- Role
+- VoiceProfile
+- Asset
+- Workflow
+- Production
+- GenerationPreset
+
+Изменение данных агрегата в обход Project запрещено.
+
+---
+
+# 5. Ownership
+
+Project является владельцем следующих коллекций.
+
+```
+Project
+│
+├── Sources
+├── Documents
+├── Roles
+├── VoiceProfiles
+├── Assets
+├── Workflows
+├── Productions
+└── GenerationPresets
+```
+
+Удаление Project SHALL удалять весь агрегат.
+
+---
+
+# 6. Identity
+
+Каждый Project обязан иметь неизменяемый идентификатор.
+
+Identifier SHALL:
+
+- быть глобально уникальным;
+- сохраняться в течение всей жизни проекта;
+- использоваться при сериализации;
+- использоваться всеми внутренними ссылками.
+
+Identifier SHALL NOT изменяться.
+
+---
+
+# 7. Metadata
+
+Project обязан содержать минимум следующие метаданные.
+
+| Property | Required | Mutable |
+|----------|----------|---------|
+| Identifier | Yes | No |
+| Name | Yes | Yes |
+| Description | No | Yes |
+| Version | Yes | Yes |
+| FormatVersion | Yes | Yes |
+| Language | Yes | Yes |
+| Author | No | Yes |
+| CreatedUtc | Yes | No |
+| ModifiedUtc | Yes | Yes |
+| ApplicationVersion | Yes | Yes |
+
+Дополнительные свойства MAY быть добавлены в будущем без нарушения обратной совместимости.
+
+---
+
+# 8. Child Collections
+
+Каждая дочерняя коллекция обладает следующими свойствами.
+
+- уникальные идентификаторы элементов;
+- детерминированный порядок хранения;
+- возможность поиска по Identifier;
+- отсутствие дубликатов.
+
+---
+
+# 9. Invariants
+
+Project SHALL удовлетворять следующим инвариантам.
+
+- Identifier уникален.
+- Name не пустой.
+- Version определена.
+- FormatVersion определена.
+- Все дочерние объекты имеют уникальные Identifier.
+- Все ссылки указывают на существующие объекты.
+- Не существует объектов без владельца.
+- Не существует циклического владения.
+
+Нарушение любого инварианта делает Project некорректным.
+
+---
+
+# 10. Lifecycle
+
+Project проходит следующие состояния.
+>>>>>>> c975edf (t)
 
 ```
 Created
@@ -98,14 +276,18 @@ Saved
 
 ↓
 
+<<<<<<< HEAD
 Archived (optional)
 
 ↓
 
+=======
+>>>>>>> c975edf (t)
 Closed
 
 ↓
 
+<<<<<<< HEAD
 Deleted
 ```
 
@@ -457,6 +639,250 @@ Core не должен зависеть от внутреннего содерж
 Любая реализация сущности Project обязана соответствовать требованиям настоящего документа.
 
 Изменение модели Project допускается только посредством изменения настоящей спецификации и оформления соответствующего ADR.
+=======
+Archived
+```
+
+Возврат из состояния Archived запрещён.
+
+---
+
+# 11. State Transitions
+
+Допустимые переходы.
+
+```
+Created
+    ↓
+Opened
+
+Opened
+    ↓
+Modified
+
+Modified
+    ↓
+Saved
+
+Saved
+    ↓
+Modified
+
+Saved
+    ↓
+Closed
+
+Closed
+    ↓
+Opened
+
+Closed
+    ↓
+Archived
+```
+
+Недопустимые переходы SHALL завершаться ошибкой.
+
+---
+
+# 12. Creation Rules
+
+Project SHALL создаваться исключительно Project Service.
+
+Во время создания SHALL быть выполнены:
+
+- генерация Identifier;
+- создание обязательных коллекций;
+- инициализация метаданных;
+- установка версии формата;
+- публикация события ProjectCreated.
+
+---
+
+# 13. Modification Rules
+
+Любое изменение агрегата SHALL:
+
+- выполняться через Application Layer;
+- проверять инварианты;
+- обновлять ModifiedUtc;
+- публиковать соответствующее событие.
+
+Прямое изменение дочерних коллекций запрещено.
+
+---
+
+# 14. Deletion Rules
+
+Удаление Project допускается только после подтверждения пользователя.
+
+Удаление SHALL:
+
+- завершить все активные Workflow;
+- отменить все Job;
+- освободить ресурсы;
+- удалить временные данные;
+- удалить дочерние объекты.
+
+Частичное удаление агрегата запрещено.
+
+---
+
+# 15. Persistence
+
+Project не знает способа хранения.
+
+Project SHALL сериализоваться исключительно через соответствующие Contracts.
+
+Никакой код Domain SHALL NOT обращаться к файловой системе.
+
+---
+
+# 16. Concurrency
+
+Project является объектом с эксклюзивной записью.
+
+Допускается:
+
+- конкурентное чтение;
+- единственная операция записи.
+
+Одновременное изменение агрегата несколькими потоками запрещено.
+
+---
+
+# 17. Domain Events
+
+Project публикует следующие события.
+
+- ProjectCreated
+- ProjectOpened
+- ProjectClosed
+- ProjectSaved
+- ProjectModified
+- ProjectRenamed
+- ProjectArchived
+- ProjectFormatUpgraded
+
+Полный состав событий определяется разделом `500_Events`.
+
+---
+
+# 18. Commands
+
+Допустимые команды.
+
+- CreateProject
+- OpenProject
+- SaveProject
+- RenameProject
+- CloseProject
+- ArchiveProject
+- UpgradeProjectFormat
+
+Команды SHALL выполняться через Application Layer.
+
+---
+
+# 19. Relationships
+
+Project владеет:
+
+- Source
+- Document
+- Role
+- VoiceProfile
+- Workflow
+- Production
+- Asset
+- GenerationPreset
+
+Project НЕ владеет:
+
+- Plugin
+- AI Engine
+- Runtime
+- GUI Components
+
+---
+
+# 20. Error Conditions
+
+Следующие ситуации SHALL считаться ошибками.
+
+- дублирование Identifier;
+- пустое имя проекта;
+- повреждение ссылок;
+- отсутствие обязательных коллекций;
+- неизвестная версия формата;
+- нарушение инвариантов.
+
+Project SHALL NOT переходить в неконсистентное состояние.
+
+---
+
+# 21. Extension Rules
+
+Plugin MAY:
+
+- добавлять собственные метаданные;
+- регистрировать собственные ресурсы;
+- хранить собственные данные в предусмотренных разделах проекта.
+
+Plugin SHALL NOT:
+
+- изменять структуру агрегата;
+- изменять обязательные свойства;
+- изменять жизненный цикл Project.
+
+---
+
+# 22. AI Implementation Requirements
+
+Реализация Project SHALL обеспечивать:
+
+- полное соблюдение модели агрегата;
+- невозможность обхода Aggregate Root;
+- строгую проверку инвариантов;
+- детерминированное поведение;
+- отсутствие скрытого состояния.
+
+Если реализация требует дополнительных архитектурных решений, спецификация должна быть дополнена до начала реализации.
+
+---
+
+# 23. Test Requirements
+
+Минимальный набор тестов SHALL включать:
+
+- создание проекта;
+- открытие проекта;
+- сохранение проекта;
+- повторное открытие проекта;
+- проверку уникальности Identifier;
+- проверку всех инвариантов;
+- проверку ссылочной целостности;
+- проверку публикации Domain Events;
+- проверку допустимых переходов состояний;
+- проверку восстановления после сериализации.
+
+---
+
+# 24. Compliance Checklist
+
+Реализация Project соответствует настоящей спецификации только если:
+
+- Project является единственным Aggregate Root верхнего уровня;
+- все дочерние объекты принадлежат Project;
+- соблюдены все инварианты;
+- реализованы все допустимые переходы состояний;
+- реализованы все обязательные события;
+- реализованы все обязательные команды;
+- отсутствует прямой доступ к инфраструктуре;
+- отсутствует скрытое состояние;
+- соблюдена модель конкурентного доступа;
+- обеспечена полная детерминированность поведения.
+>>>>>>> c975edf (t)
 
 ---
 

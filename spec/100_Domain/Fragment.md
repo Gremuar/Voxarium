@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Fragment.md
 
+<<<<<<< HEAD
 Document ID: DOM-105
 
 Title: Fragment
 
 Version: 1.0.0
+=======
+Document ID: DOM-005
+
+Title: Fragment
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,6 +23,7 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
@@ -32,11 +41,29 @@ Referenced By
 - Playback_Module.md
 - Export_Module.md
 - Project_Format.md
+=======
+- SAS-000 Project Philosophy
+- SAS-001 Glossary
+- SAS-002 Domain Ontology
+- SAS-003 Architecture Principles
+- Document
+- Role
+- Emotion
+
+Referenced By
+
+- Timeline
+- SpeechSegment
+- Generation_Service
+- Voice_Service
+- Search_Index_Service
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Fragment является основной производственной единицей платформы Voxarium.
 
 Именно Fragment представляет одну законченную реплику, повествовательный фрагмент, описание, субтитр или иной логически неделимый участок текста, который может быть независимо обработан системой.
@@ -493,11 +520,361 @@ Fragment обязан удовлетворять следующим требов
 Частично созданные Speech Segment сохраняются только при наличии признака успешного восстановления.
 
 В противном случае результаты считаются недействительными.
+=======
+Fragment представляет собой минимальную логическую единицу текста, с которой работает система.
+
+Именно Fragment является объектом назначения роли, эмоции, параметров генерации и большинства пользовательских операций редактирования.
+
+Fragment является основной единицей генерации речи.
+
+---
+
+# 2. Responsibilities
+
+Fragment SHALL отвечать за:
+
+- хранение текста;
+- хранение логической позиции;
+- хранение ссылок на Role;
+- хранение ссылок на Emotion;
+- хранение пользовательских параметров генерации;
+- хранение состояния подготовки к генерации;
+- обеспечение неизменности собственной идентичности.
+
+---
+
+# 3. Non-Responsibilities
+
+Fragment SHALL NOT:
+
+- хранить аудио;
+- хранить SpeechSegment;
+- определять порядок воспроизведения;
+- выполнять синтез речи;
+- обращаться к AI Engine;
+- выполнять импорт;
+- выполнять экспорт.
+
+---
+
+# 4. Ownership
+
+Fragment принадлежит Document.
+
+```
+Project
+    │
+    └── Document
+            │
+            └── Fragment
+```
+
+Fragment SHALL NOT существовать вне Document.
+
+---
+
+# 5. Aggregate Membership
+
+Fragment является Entity агрегата Document.
+
+Изменение Fragment SHALL происходить исключительно через Document.
+
+Прямое изменение Fragment другими объектами запрещено.
+
+---
+
+# 6. Identity
+
+Каждый Fragment обязан иметь неизменяемый Identifier.
+
+Identifier SHALL:
+
+- быть уникальным внутри Project;
+- использоваться всеми ссылками;
+- сохраняться после сериализации;
+- никогда не изменяться.
+
+---
+
+# 7. Fragment Types
+
+Поддерживаются следующие типы Fragment.
+
+- Narration
+- Dialogue
+- Thought
+- Quote
+- Heading
+- Note
+- Metadata
+- Silence
+
+Plugin MAY регистрировать дополнительные типы.
+
+---
+
+# 8. Text
+
+Fragment содержит текст.
+
+Текст SHALL:
+
+- храниться в Unicode;
+- сохранять все символы пользователя;
+- поддерживать многострочное содержимое;
+- не содержать служебной разметки приложения.
+
+Fragment SHALL хранить исходный текст пользователя.
+
+Нормализация текста выполняется Generation Service.
+
+---
+
+# 9. Metadata
+
+Fragment содержит следующие свойства.
+
+| Property | Required | Mutable |
+|----------|----------|---------|
+| Identifier | Yes | No |
+| Type | Yes | Yes |
+| Text | Yes | Yes |
+| Language | No | Yes |
+| RoleId | No | Yes |
+| EmotionId | No | Yes |
+| GenerationPresetId | No | Yes |
+| Notes | No | Yes |
+| Revision | Yes | Yes |
+
+---
+
+# 10. Relationships
+
+Fragment может ссылаться на:
+
+- Role
+- Emotion
+- GenerationPreset
+
+Fragment SHALL NOT владеть этими объектами.
+
+Все ссылки являются необязательными.
+
+---
+
+# 11. Position
+
+Fragment имеет логический порядок внутри Document.
+
+Порядок определяется исключительно Document.
+
+Fragment SHALL NOT хранить собственный индекс.
+
+Положение Fragment вычисляется из структуры Document.
+
+---
+
+# 12. Language
+
+Fragment MAY переопределять язык Document.
+
+Если язык не определён, используется язык Document.
+
+---
+
+# 13. Revision
+
+Любое изменение текста SHALL увеличивать Revision.
+
+Изменение только ссылок MAY также увеличивать Revision.
+
+Revision SHALL быть монотонно возрастающим.
+
+---
+
+# 14. Lifecycle
+
+```
+Created
+
+↓
+
+Edited
+
+↓
+
+Validated
+
+↓
+
+ReadyForGeneration
+
+↓
+
+Archived
+```
+
+---
+
+# 15. Generation State
+
+Для генерации используются следующие состояния.
+
+- NotGenerated
+- Queued
+- Generating
+- Generated
+- Invalidated
+
+Изменение текста SHALL автоматически переводить состояние в Invalidated.
+
+---
+
+# 16. Invariants
+
+Fragment SHALL удовлетворять следующим требованиям.
+
+- Identifier существует.
+- Text существует.
+- Text не пустой.
+- Revision ≥ 1.
+- Все ссылки корректны.
+- Type определён.
+- Fragment принадлежит одному Document.
+
+---
+
+# 17. Creation Rules
+
+Fragment создаётся только через Document.
+
+Во время создания SHALL:
+
+- создать Identifier;
+- установить Revision = 1;
+- установить состояние Created;
+- опубликовать FragmentCreated.
+
+---
+
+# 18. Modification Rules
+
+При изменении текста SHALL:
+
+- обновить Revision;
+- обновить Modified Timestamp Document;
+- инвалидировать связанные SpeechSegment;
+- опубликовать FragmentModified.
+
+Изменение текста SHALL NOT изменять Identifier.
+
+---
+
+# 19. Split Rules
+
+Fragment MAY быть разделён.
+
+После разделения:
+
+исходный Fragment удаляется;
+
+создаются новые Fragment;
+
+создаются новые Identifier;
+
+публикуется FragmentSplit.
+
+История операции сохраняется.
+
+---
+
+# 20. Merge Rules
+
+Несколько Fragment MAY объединяться.
+
+После объединения:
+
+создаётся новый Fragment;
+
+старые Fragment архивируются;
+
+создаётся новый Identifier;
+
+публикуется FragmentMerged.
+
+---
+
+# 21. Relationship With SpeechSegment
+
+Fragment не хранит SpeechSegment.
+
+SpeechSegment всегда ссылается на Fragment.
+
+Один Fragment MAY использоваться несколькими SpeechSegment.
+
+---
+
+# 22. Persistence
+
+Fragment сериализуется только как часть Document.
+
+Fragment SHALL NOT знать:
+
+- JSON;
+- XML;
+- файловую систему;
+- SQLite;
+- сетевые протоколы.
+
+---
+
+# 23. Concurrency
+
+Допускается:
+
+- конкурентное чтение.
+
+Не допускается:
+
+- конкурентное изменение.
+
+Запись SHALL сериализоваться Application Layer.
+
+---
+
+# 24. Domain Events
+
+Fragment публикует следующие события.
+
+- FragmentCreated
+- FragmentModified
+- FragmentDeleted
+- FragmentSplit
+- FragmentMerged
+- FragmentValidated
+- FragmentArchived
+
+---
+
+# 25. Commands
+
+Поддерживаются следующие команды.
+
+- CreateFragment
+- UpdateFragmentText
+- AssignRole
+- AssignEmotion
+- AssignGenerationPreset
+- SplitFragment
+- MergeFragments
+- DeleteFragment
+>>>>>>> c975edf (t)
 
 ---
 
 # 26. Performance Requirements
 
+<<<<<<< HEAD
 Fragment должен занимать минимальный объём памяти.
 
 Загрузка истории Speech Version должна выполняться лениво.
@@ -543,6 +920,80 @@ Core не должен зависеть от структуры расширен
 Любая реализация сущности Fragment обязана соответствовать требованиям настоящего документа.
 
 Изменение модели Fragment допускается только посредством изменения настоящей спецификации и оформления соответствующего Architecture Decision Record.
+=======
+Document SHALL поддерживать работу минимум с:
+
+- 1 000 000 Fragment;
+- временем поиска Fragment менее 10 мс по Identifier;
+- линейной сериализацией структуры.
+
+---
+
+# 27. Extension Rules
+
+Plugin MAY:
+
+- добавлять собственные пользовательские свойства;
+- регистрировать новые Fragment Type;
+- хранить дополнительные метаданные.
+
+Plugin SHALL NOT:
+
+- изменять обязательные свойства;
+- изменять Identifier;
+- изменять правила владения.
+
+---
+
+# 28. AI Implementation Requirements
+
+ИИ SHALL реализовывать Fragment как полностью независимую Entity.
+
+Запрещается:
+
+- использовать позицию как Identifier;
+- хранить SpeechSegment внутри Fragment;
+- хранить Audio внутри Fragment;
+- хранить вычисляемые данные.
+
+Все производные данные должны вычисляться другими сервисами.
+
+---
+
+# 29. Test Requirements
+
+Минимальный набор тестов.
+
+- создание Fragment;
+- изменение текста;
+- назначение Role;
+- назначение Emotion;
+- назначение GenerationPreset;
+- разделение Fragment;
+- объединение Fragment;
+- проверка Revision;
+- сериализация;
+- десериализация;
+- публикация событий;
+- проверка инвариантов.
+
+---
+
+# 30. Compliance Checklist
+
+Реализация соответствует настоящему документу только если:
+
+- Fragment принадлежит Document;
+- Identifier неизменяем;
+- Text является единственным источником текстового содержимого;
+- отсутствуют вычисляемые данные;
+- реализованы все события;
+- реализованы все команды;
+- соблюдены все инварианты;
+- отсутствуют скрытые зависимости;
+- отсутствует доступ к Infrastructure;
+- сериализация полностью воспроизводима.
+>>>>>>> c975edf (t)
 
 ---
 

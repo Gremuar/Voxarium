@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Source.md
 
+<<<<<<< HEAD
 Document ID: DOM-102
 
 Title: Source
 
 Version: 1.0.0
+=======
+Document ID: DOM-002
+
+Title: Source
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,6 +23,7 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
@@ -27,11 +36,26 @@ Referenced By
 - IImporter.md
 - Project_Format.md
 - Asset.md
+=======
+- SAS-000 Project Philosophy
+- SAS-001 Glossary
+- SAS-002 Domain Ontology
+- SAS-003 Architecture Principles
+- Project
+
+Referenced By
+
+- Document
+- Import_Service
+- Project_Service
+- Search_Index_Service
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Source представляет собой неизменяемое представление исходного материала, импортированного пользователем в Project.
 
 Source является единственным официальным источником происхождения данных (Source of Origin).
@@ -382,6 +406,403 @@ Plugin может вводить собственные специализиро
 Любая реализация сущности Source обязана соответствовать настоящему документу.
 
 Изменение модели Source допускается только посредством изменения настоящей спецификации и оформления соответствующего Architecture Decision Record.
+=======
+Source представляет собой первичный источник данных, импортированный в проект.
+
+Source описывает происхождение информации, но не содержит результатов её обработки.
+
+Source является единственной точкой происхождения пользовательских данных.
+
+Все объекты Document обязаны ссылаться на Source, из которого были созданы.
+
+---
+
+# 2. Responsibilities
+
+Source SHALL отвечать за:
+
+- описание происхождения данных;
+- хранение информации об исходном файле;
+- хранение контрольных сумм;
+- хранение информации об импорте;
+- хранение информации о кодировке;
+- хранение информации о языке;
+- обеспечение воспроизводимости импорта.
+
+---
+
+# 3. Non-Responsibilities
+
+Source SHALL NOT:
+
+- содержать текст документа;
+- хранить структуру документа;
+- хранить Timeline;
+- хранить Fragment;
+- хранить результаты генерации;
+- хранить Audio;
+- выполнять импорт.
+
+Импорт выполняется Import Service.
+
+---
+
+# 4. Ownership
+
+Source принадлежит Project.
+
+```
+Project
+    │
+    └── Sources
+            │
+            └── Source
+```
+
+Source SHALL NOT существовать вне Project.
+
+---
+
+# 5. Identity
+
+Каждый Source обязан иметь неизменяемый Identifier.
+
+Identifier SHALL:
+
+- быть уникальным внутри Project;
+- использоваться всеми ссылками;
+- сохраняться после сериализации;
+- никогда не изменяться.
+
+---
+
+# 6. Metadata
+
+Source содержит следующие обязательные свойства.
+
+| Property | Required | Mutable |
+|------------|----------|---------|
+| Identifier | Yes | No |
+| DisplayName | Yes | Yes |
+| OriginalFileName | Yes | No |
+| OriginalPath | No | Yes |
+| ImportDateUtc | Yes | No |
+| FileSize | Yes | No |
+| Checksum | Yes | No |
+| Encoding | Yes | No |
+| Language | Yes | Yes |
+| ImporterId | Yes | No |
+| ImporterVersion | Yes | No |
+| SourceType | Yes | No |
+
+---
+
+# 7. SourceType
+
+Допустимые типы источников.
+
+- PlainText
+- Markdown
+- EPUB
+- FB2
+- DOCX
+- PDF
+- HTML
+- WebPage
+- Clipboard
+- Subtitle
+- Plugin
+
+Добавление новых типов SHALL сохранять обратную совместимость.
+
+---
+
+# 8. Import Information
+
+Source обязан хранить информацию об импорте.
+
+Минимальный состав:
+
+- Importer Identifier;
+- Importer Version;
+- Import Timestamp;
+- Original Encoding;
+- Import Options;
+- Warnings;
+- Errors.
+
+Эта информация используется для повторного импорта.
+
+---
+
+# 9. Original Resource
+
+Source MAY ссылаться на исходный ресурс.
+
+Допустимые варианты:
+
+- локальный файл;
+- URL;
+- Plugin Resource;
+- Clipboard;
+- Generated Resource.
+
+Отсутствие исходного ресурса не делает Source некорректным.
+
+---
+
+# 10. Checksum
+
+Каждый Source SHALL содержать контрольную сумму.
+
+Checksum используется для:
+
+- обнаружения изменений;
+- проверки целостности;
+- повторного импорта;
+- обнаружения дубликатов.
+
+Алгоритм вычисления определяется Infrastructure.
+
+---
+
+# 11. Relationships
+
+Source имеет следующие отношения.
+
+```
+Project
+    │
+    └── Source
+            │
+            └──────► Document
+```
+
+Один Source MAY использоваться несколькими Document.
+
+Каждый Document SHALL ссылаться ровно на один Source.
+
+---
+
+# 12. Lifecycle
+
+```
+Imported
+
+↓
+
+Validated
+
+↓
+
+Indexed
+
+↓
+
+Referenced
+
+↓
+
+Archived
+```
+
+Удаление Source допускается только при отсутствии связанных Document.
+
+---
+
+# 13. State Rules
+
+Imported
+
+- объект создан;
+- импорт завершён.
+
+Validated
+
+- проверена структура;
+- определён язык;
+- определена кодировка.
+
+Indexed
+
+- построен поисковый индекс.
+
+Referenced
+
+- существует хотя бы один Document.
+
+Archived
+
+- источник больше не используется.
+
+---
+
+# 14. Invariants
+
+Source SHALL удовлетворять следующим требованиям.
+
+- Identifier существует.
+- ImportDate существует.
+- Checksum существует.
+- SourceType определён.
+- Importer определён.
+- Размер файла не отрицателен.
+- Кодировка определена.
+- Language определён.
+- Все ссылки корректны.
+
+---
+
+# 15. Creation Rules
+
+Source создаётся исключительно Import Service.
+
+Во время создания SHALL быть выполнены:
+
+- генерация Identifier;
+- вычисление Checksum;
+- определение Encoding;
+- определение Language;
+- заполнение Import Metadata;
+- публикация события SourceImported.
+
+---
+
+# 16. Modification Rules
+
+Допускается изменение только следующих полей.
+
+- DisplayName;
+- Language;
+- OriginalPath.
+
+Все остальные свойства являются неизменяемыми.
+
+---
+
+# 17. Deletion Rules
+
+Source MAY быть удалён только если:
+
+- отсутствуют связанные Document;
+- отсутствуют активные Workflow;
+- отсутствуют блокировки.
+
+Удаление SHALL публиковать событие SourceDeleted.
+
+---
+
+# 18. Persistence
+
+Source сериализуется как часть Project.
+
+Source не знает:
+
+- файловую систему;
+- JSON;
+- SQLite;
+- ZIP;
+- XML.
+
+---
+
+# 19. Concurrency
+
+Допускается:
+
+- конкурентное чтение.
+
+Не допускается:
+
+- конкурентное изменение;
+- частичное обновление.
+
+---
+
+# 20. Domain Events
+
+Source публикует:
+
+- SourceImported
+- SourceValidated
+- SourceUpdated
+- SourceArchived
+- SourceDeleted
+
+---
+
+# 21. Commands
+
+Допустимые команды.
+
+- ImportSource
+- RenameSource
+- ValidateSource
+- ArchiveSource
+- DeleteSource
+
+---
+
+# 22. Extension Rules
+
+Plugin MAY:
+
+- добавлять собственные Import Metadata;
+- реализовывать новые SourceType;
+- реализовывать новые Importer.
+
+Plugin SHALL NOT:
+
+- изменять обязательные свойства;
+- нарушать инварианты;
+- изменять Identifier.
+
+---
+
+# 23. AI Implementation Requirements
+
+Реализация SHALL гарантировать:
+
+- неизменяемость происхождения данных;
+- воспроизводимость импорта;
+- отсутствие потери Import Metadata;
+- сохранение ссылочной целостности;
+- детерминированную сериализацию.
+
+---
+
+# 24. Test Requirements
+
+Обязательные тесты.
+
+- импорт Source;
+- повторный импорт;
+- проверка Checksum;
+- проверка уникальности Identifier;
+- проверка инвариантов;
+- сериализация;
+- десериализация;
+- удаление;
+- публикация Domain Events;
+- создание нескольких Document из одного Source.
+
+---
+
+# 25. Compliance Checklist
+
+Реализация соответствует настоящему документу только если:
+
+- Source принадлежит Project;
+- происхождение данных неизменно;
+- Import Metadata полностью сохраняются;
+- реализованы все обязательные события;
+- реализованы все команды;
+- соблюдены все инварианты;
+- отсутствуют скрытые зависимости;
+- отсутствует доступ к Infrastructure;
+- сериализация полностью воспроизводима;
+- реализованы все обязательные тесты.
+>>>>>>> c975edf (t)
 
 ---
 

@@ -3,11 +3,19 @@
 Document Path:
 spec/100_Domain/Production.md
 
+<<<<<<< HEAD
 Document ID: DOM-101
 
 Title: Production
 
 Version: 1.0.0
+=======
+Document ID: DOM-009
+
+Title: Production
+
+Version: 2.0.0
+>>>>>>> c975edf (t)
 
 Status: Accepted
 
@@ -15,6 +23,7 @@ Classification: Normative
 
 Depends On
 
+<<<<<<< HEAD
 - SAS-001 Glossary
 - SAS-002 Domain Ontology
 - SAS-003 Architecture Principles
@@ -29,11 +38,30 @@ Referenced By
 - Workflow.md
 - GenerationPreset.md
 - ExportProfile.md
+=======
+- SAS-000 Project Philosophy
+- SAS-001 Glossary
+- SAS-002 Domain Ontology
+- SAS-003 Architecture Principles
+- Project
+- Document
+- Timeline
+- SpeechSegment
+
+Referenced By
+
+- AudioTrack
+- Export_Service
+- Playback_Module
+- Workflow
+- Generation_Service
+>>>>>>> c975edf (t)
 
 ---
 
 # 1. Purpose
 
+<<<<<<< HEAD
 Production представляет собой независимую производственную редакцию проекта.
 
 Production предназначен для хранения полного набора данных, необходимых для создания одного законченного варианта озвучки.
@@ -99,11 +127,66 @@ Production позволяет создавать различные вариан
 • Версия для аудиокниги
 
 Каждый такой вариант является отдельной Production.
+=======
+Production представляет собой итоговую конфигурацию озвученного произведения.
+
+Production определяет, какие документы, Timeline и результаты генерации должны быть объединены в единый аудиопроект.
+
+Production является точкой сборки готового результата.
+
+Production не содержит аудио.
+
+Production не выполняет генерацию.
+
+---
+
+# 2. Responsibilities
+
+Production SHALL отвечать за:
+
+- описание состава произведения;
+- определение порядка документов;
+- определение структуры глав;
+- хранение пользовательских настроек сборки;
+- хранение ссылок на используемые Timeline;
+- хранение параметров экспорта;
+- хранение состояния сборки.
+
+---
+
+# 3. Non-Responsibilities
+
+Production SHALL NOT:
+
+- хранить текст;
+- хранить Fragment;
+- хранить SpeechSegment;
+- хранить AudioTrack;
+- выполнять генерацию речи;
+- выполнять микширование;
+- выполнять экспорт;
+- выполнять обработку аудио.
+
+---
+
+# 4. Ownership
+
+Production принадлежит Project.
+
+```
+Project
+    │
+    └── Productions
+            │
+            └── Production
+```
+>>>>>>> c975edf (t)
 
 ---
 
 # 5. Identity
 
+<<<<<<< HEAD
 Каждая Production обладает постоянным UUID v7.
 
 Изменение идентификатора запрещено.
@@ -483,6 +566,327 @@ Core не должен анализировать структуру этих д
 Любая реализация сущности Production обязана соответствовать настоящему документу.
 
 Изменение модели Production допускается только посредством изменения настоящей спецификации с оформлением соответствующего Architecture Decision Record.
+=======
+Каждый Production обязан иметь неизменяемый Identifier.
+
+Identifier SHALL:
+
+- быть уникальным внутри Project;
+- использоваться всеми ссылками;
+- сохраняться после сериализации;
+- никогда не изменяться.
+
+---
+
+# 6. Metadata
+
+Production содержит следующие свойства.
+
+| Property | Required | Mutable |
+|----------|----------|---------|
+| Identifier | Yes | No |
+| Name | Yes | Yes |
+| Description | No | Yes |
+| Status | Yes | Yes |
+| ExportProfileId | No | Yes |
+| Revision | Yes | Yes |
+| CreatedUtc | Yes | No |
+| ModifiedUtc | Yes | Yes |
+
+---
+
+# 7. Composition
+
+Production содержит упорядоченную коллекцию элементов.
+
+Каждый элемент представляет ссылку на один Document.
+
+```
+Production
+
+├── Item 1 ─────► Document
+├── Item 2 ─────► Document
+├── Item 3 ─────► Document
+└── ...
+```
+
+Один Document MAY использоваться несколькими Production.
+
+---
+
+# 8. Ordering
+
+Production является единственным владельцем порядка документов внутри произведения.
+
+Document SHALL NOT хранить информацию о своем положении в Production.
+
+Изменение порядка выполняется только через Production.
+
+---
+
+# 9. Timeline Usage
+
+Для каждого Document используется его текущий Timeline.
+
+Production не копирует Timeline.
+
+Production хранит только ссылки.
+
+---
+
+# 10. Export Profile
+
+Production MAY ссылаться на ExportProfile.
+
+При отсутствии ExportProfile используются настройки проекта.
+
+Production не хранит параметры экспорта непосредственно.
+
+---
+
+# 11. Status
+
+Допустимые состояния.
+
+- Draft
+- Ready
+- Building
+- Completed
+- Failed
+- Archived
+
+Production SHALL находиться только в одном состоянии.
+
+---
+
+# 12. Lifecycle
+
+```
+Draft
+
+↓
+
+Ready
+
+↓
+
+Building
+
+↓
+
+Completed
+
+↓
+
+Archived
+```
+
+При возникновении ошибки допускается переход:
+
+```
+Building
+
+↓
+
+Failed
+```
+
+---
+
+# 13. Invariants
+
+Production SHALL удовлетворять следующим требованиям.
+
+- Identifier существует.
+- Name не пустой.
+- Все Document существуют.
+- Отсутствуют дубли элементов.
+- Revision ≥ 1.
+- Все ссылки корректны.
+
+---
+
+# 14. Creation Rules
+
+Production создаётся через Project Service.
+
+При создании SHALL:
+
+- создать Identifier;
+- создать пустую композицию;
+- установить Status = Draft;
+- установить Revision = 1;
+- опубликовать ProductionCreated.
+
+---
+
+# 15. Modification Rules
+
+Любое изменение SHALL:
+
+- проверять инварианты;
+- увеличивать Revision;
+- обновлять ModifiedUtc;
+- публиковать ProductionModified.
+
+---
+
+# 16. Build Readiness
+
+Production считается Ready только если:
+
+- все Document существуют;
+- все Timeline валидны;
+- отсутствуют SpeechSegment в состоянии Failed;
+- отсутствуют отсутствующие VoiceProfile;
+- все обязательные ресурсы доступны.
+
+---
+
+# 17. Deletion Rules
+
+Production MAY быть удалён.
+
+Удаление SHALL NOT:
+
+- удалять Document;
+- удалять Timeline;
+- удалять AudioTrack;
+- изменять Project.
+
+Удаляется только сама конфигурация Production.
+
+---
+
+# 18. Persistence
+
+Production сериализуется как часть Project.
+
+Production SHALL NOT знать:
+
+- файловую систему;
+- формат экспорта;
+- формат аудио;
+- AI Runtime;
+- внутренние параметры Export Engine.
+
+---
+
+# 19. Concurrency
+
+Допускается:
+
+- конкурентное чтение.
+
+Не допускается:
+
+- конкурентное изменение.
+
+---
+
+# 20. Domain Events
+
+Production публикует:
+
+- ProductionCreated
+- ProductionModified
+- ProductionReady
+- ProductionBuildStarted
+- ProductionCompleted
+- ProductionFailed
+- ProductionArchived
+- ProductionDeleted
+
+---
+
+# 21. Commands
+
+Поддерживаются команды.
+
+- CreateProduction
+- RenameProduction
+- AddDocument
+- RemoveDocument
+- ReorderDocuments
+- AssignExportProfile
+- ValidateProduction
+- ArchiveProduction
+- DeleteProduction
+
+---
+
+# 22. Performance Requirements
+
+Production SHALL поддерживать:
+
+- не менее 10 000 Document;
+- перестановку элементов без полного копирования коллекции;
+- быстрое получение итоговой последовательности.
+
+---
+
+# 23. Extension Rules
+
+Plugin MAY:
+
+- добавлять собственные свойства;
+- добавлять пользовательские этапы подготовки;
+- хранить дополнительные метаданные.
+
+Plugin SHALL NOT:
+
+- изменять модель владения;
+- изменять обязательные свойства;
+- нарушать инварианты.
+
+---
+
+# 24. AI Implementation Requirements
+
+Production SHALL описывать только логическую структуру итогового произведения.
+
+Реализация SHALL NOT хранить:
+
+- аудиофайлы;
+- результаты микширования;
+- параметры кодеков;
+- параметры контейнеров;
+- временные рабочие файлы.
+
+Все подобные данные принадлежат Infrastructure Layer.
+
+---
+
+# 25. Test Requirements
+
+Минимальный набор тестов.
+
+- создание Production;
+- добавление Document;
+- удаление Document;
+- изменение порядка;
+- проверка готовности;
+- сериализация;
+- десериализация;
+- проверка инвариантов;
+- публикация событий.
+
+---
+
+# 26. Compliance Checklist
+
+Реализация соответствует настоящей спецификации только если:
+
+- Production принадлежит Project;
+- хранит только логическую структуру произведения;
+- не содержит аудио;
+- не содержит результатов экспорта;
+- реализованы все события;
+- реализованы все команды;
+- соблюдены все инварианты;
+- отсутствует доступ к Infrastructure;
+- сериализация полностью воспроизводима.
+>>>>>>> c975edf (t)
 
 ---
 
